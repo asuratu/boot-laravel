@@ -3,6 +3,9 @@
 namespace ZhuiTech\BootLaravel\Helpers;
 
 use Exception;
+use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +31,8 @@ class RestClient
         ],
     ];
 
-    protected $client;
+    protected HttpClient $client;
+
     /**
      * 默认请求参数
      * @var array
@@ -42,38 +46,38 @@ class RestClient
 
     /**
      * 默认的服务器
-     * @var null
+     * @var string|null
      */
-    protected $server = NULL;
+    protected ?string $server = NULL;
 
     /**
      * 模拟用户
-     * @var UserContract
+     * @var UserContract|null
      */
-    protected $user = NULL;
+    protected ?UserContract $user = NULL;
 
     /**
      * 日志名
-     * @var null
+     * @var Logger|null
      */
-    protected $logName = NULL;
+    protected ?Logger $logName = NULL;
 
     /**
      * 日志对象
-     * @var null
+     * @var Logger|null
      */
-    protected $logger = NULL;
+    protected ?Logger $logger = NULL;
 
     /**
      * 返回原始内容
      * @var bool
      */
-    protected $plain = false;
+    protected bool $plain = false;
 
     /**
-     * @var Response
+     * @var Response|null
      */
-    protected $response = null;
+    protected ?Response $response = null;
 
     /**
      * 代理模式
@@ -178,9 +182,9 @@ class RestClient
      * @param string $method
      * @param array  $options
      * @return array|mixed
-     * @throws RestCodeException
+     * @throws RestCodeException|GuzzleException
      */
-    public function request($path, $method = 'GET', $options = [])
+    public function request(string $path, string $method = 'GET', array $options = []): mixed
     {
         $url = $this->getUrl($path);
         $method = strtoupper($method);
@@ -209,7 +213,7 @@ class RestClient
         $options['headers'] = $headers + $options['headers'];
 
         try {
-            $this->response = $this->getClient()->request($method, $url, $options);
+            $this->response = $this-> ()->request($method, $url, $options);
             $content = (string)$this->response->getBody();
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
@@ -247,10 +251,10 @@ class RestClient
 
     /**
      * 获取正确请求地址
-     * @param $path
-     * @return mixed
+     * @param string $path
+     * @return string
      */
-    public function getUrl($path)
+    public function getUrl(string $path): string
     {
         if (str_contains($path, '://') || empty($this->server)) {
             return $path;
@@ -265,7 +269,7 @@ class RestClient
         return rtrim($prefix, '/') . '/' . ltrim($path, '/');
     }
 
-    protected function getClient()
+    protected function getClient(): HttpClient
     {
         if (!($this->client instanceof HttpClient)) {
             // 创建处理器
