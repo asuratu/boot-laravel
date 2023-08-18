@@ -1,0 +1,13 @@
+__MACOSX
+.DS_Store
+Thumb.db
+
+.idea
+*.key
+.docker
+vendor
+
+.phpstorm.meta.php
+_ide_helper.php
+tmp
+git.sh

@@ -1,0 +1,28 @@
+{
+  "name": "asuratu/boot-laravel",
+  "description": "Laravel项目基础功能增强",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "AsuraTu",
+      "email": "tugecn@qq.com"
+    }
+  ],
+  "require": {
+    "laravel/framework": "^10.0",
+    "bkwld/croppa": "^6.0",
+    "league/fractal": "^0.20.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "ZhuiTech\\BootLaravel\\": "src"
+    },
+    "files": [
+      "src/helpers.php"
+    ]
+  },
+  "require-dev": {
+    "barryvdh/laravel-ide-helper": "^2.13"
+  }
+}
