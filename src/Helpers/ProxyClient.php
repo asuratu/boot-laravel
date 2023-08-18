@@ -7,14 +7,13 @@ use Illuminate\Support\Str;
 
 /**
  * 反向代理
- *
  * Class HttpProxy
  * @package ZhuiTech\BootLaravel\Helpers
  */
 class ProxyClient extends RestClient
 {
-	private function buildOptions()
-	{
+	private function buildOptions(): array
+    {
 		$request = request();
 
 		$options = [
@@ -49,8 +48,8 @@ class ProxyClient extends RestClient
 	 * @param null $method
 	 * @return Response
 	 */
-	public function pass($url = null, $method = null)
-	{
+	public function pass($url = null, $method = null): Response
+    {
 		$request = request();
 		$url = $url ?? $request->path();
 		$method = $method ?? strtoupper($request->server->get('REQUEST_METHOD', 'GET'));
@@ -66,8 +65,8 @@ class ProxyClient extends RestClient
 	 * @param null $method
 	 * @return array|mixed
 	 */
-	public function passJson($url = null, $method = null)
-	{
+	public function passJson($url = null, $method = null): mixed
+    {
 		$request = request();
 		$url = $url ?? $request->path();
 		$method = $method ?? strtoupper($request->server->get('REQUEST_METHOD', 'GET'));

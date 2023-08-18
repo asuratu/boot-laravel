@@ -12,7 +12,8 @@
   "require": {
     "laravel/framework": "^10.0",
     "bkwld/croppa": "^6.0",
-    "league/fractal": "^0.20.1"
+    "league/fractal": "^0.20.1",
+    "ext-curl": "*"
   },
   "autoload": {
     "psr-4": {
