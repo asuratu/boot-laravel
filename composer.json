@@ -25,6 +25,7 @@
     ]
   },
   "require-dev": {
-    "barryvdh/laravel-ide-helper": "^2.13"
+    "barryvdh/laravel-ide-helper": "^2.13",
+    "friendsofphp/php-cs-fixer": "^3.22"
   }
 }
