@@ -150,7 +150,7 @@ if (!function_exists('resize')) {
             $height = $values[1] ?? null;
         }
 
-        return (new \Bkwld\Croppa\URL())->generate(($url, $width, $height, $options);
+        return (new \Bkwld\Croppa\URL())->generate($url, $width, $height, $options);
     }
 }
 
@@ -415,7 +415,7 @@ if (!function_exists('var_export_new')) {
     /**
      * 生成格式化的php数组
      * @param mixed $expression
-     * @param bool $return
+     * @param bool  $return
      * @return string|null
      */
     function var_export_new(mixed $expression, bool $return = FALSE): ?string
