@@ -10,17 +10,17 @@ namespace ZhuiTech\BootLaravel\Models;
  */
 interface UserContract
 {
-	/**
-	 * 用户授权ID
-	 *
-	 * @return mixed
-	 */
-	function getAuthId();
+    /**
+     * 用户授权ID
+     *
+     * @return mixed
+     */
+    function getAuthId(): mixed;
 
-	/**
-	 * 用户授权类型
-	 *
-	 * @return mixed
-	 */
-	function getAuthType();
+    /**
+     * 用户授权类型
+     *
+     * @return mixed
+     */
+    function getAuthType(): mixed;
 }

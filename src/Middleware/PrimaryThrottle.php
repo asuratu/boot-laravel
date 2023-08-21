@@ -5,6 +5,7 @@ namespace ZhuiTech\BootLaravel\Middleware;
 use Closure;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * 主要流控
@@ -13,42 +14,42 @@ use RuntimeException;
  */
 class PrimaryThrottle extends ThrottleRequests
 {
-	protected function resolveRequestSignature($request)
-	{
-		$prefix = 'throttle.1.';
+    public function handle($request, Closure $next, $maxAttempts = 60, $decayMinutes = 1, $prefix = '')
+    {
+        if (config('boot-laravel.pressure_test')) {
+            return $next($request);
+        } else {
+            return parent::handle($request, $next, $maxAttempts, $decayMinutes);
+        }
+    }
 
-		if ($user = $request->user('jwt')) {
-			return $prefix . sha1($user->getAuthIdentifier());
-		}
+    protected function resolveRequestSignature($request): string
+    {
+        $prefix = 'throttle.1.';
 
-		if ($route = $request->route()) {
-			return $prefix . sha1($route->getDomain() . '|' . $request->ip());
-		}
+        if ($user = $request->user('jwt')) {
+            return $prefix . sha1($user->getAuthIdentifier());
+        }
 
-		throw new RuntimeException('Unable to generate the request signature. Route unavailable.');
-	}
+        if ($route = $request->route()) {
+            return $prefix . sha1($route->getDomain() . '|' . $request->ip());
+        }
 
-	protected function getHeaders($maxAttempts, $remainingAttempts, $retryAfter = null)
-	{
-		$headers = [
-			'X-RateLimit-Limit-1' => $maxAttempts,
-			'X-RateLimit-Remaining-1' => $remainingAttempts,
-		];
+        throw new RuntimeException('Unable to generate the request signature. Route unavailable.');
+    }
 
-		if (! is_null($retryAfter)) {
-			$headers['Retry-After'] = $retryAfter;
-			$headers['X-RateLimit-Reset'] = $this->availableAt($retryAfter);
-		}
+    protected function getHeaders($maxAttempts, $remainingAttempts, $retryAfter = null, Response|null $response = null): array
+    {
+        $headers = [
+            'X-RateLimit-Limit-1' => $maxAttempts,
+            'X-RateLimit-Remaining-1' => $remainingAttempts,
+        ];
 
-		return $headers;
-	}
+        if (!is_null($retryAfter)) {
+            $headers['Retry-After'] = $retryAfter;
+            $headers['X-RateLimit-Reset'] = $this->availableAt($retryAfter);
+        }
 
-	public function handle($request, Closure $next, $maxAttempts = 60, $decayMinutes = 1)
-	{
-		if (config('boot-laravel.pressure_test')) {
-			return $next($request);
-		} else {
-			return parent::handle($request, $next, $maxAttempts, $decayMinutes);
-		}
-	}
+        return $headers;
+    }
 }

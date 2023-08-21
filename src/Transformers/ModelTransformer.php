@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
 
 /**
@@ -16,208 +17,203 @@ use League\Fractal\TransformerAbstract;
  */
 class ModelTransformer extends TransformerAbstract
 {
-	protected $excepts = [];
+    /**
+     * 扩展include定义
+     * @var array
+     */
+    protected static array $extendIncludes = [];
+    protected array $excepts = [];
+    protected array $only = [];
+    protected array $casts = [];
+    protected array $appends = [];
 
-	protected $only = [];
+    /**
+     * 定义一个扩展的include
+     * @param string  $name
+     * @param Closure $callback
+     * @return void
+     */
+    public static function extendInclude(string $name, Closure $callback): void
+    {
+        static::$extendIncludes = array_replace_recursive(
+            static::$extendIncludes,
+            [static::class => [$name => $callback]]
+        );
+    }
 
-	protected $casts = [];
+    /**
+     * 转换
+     * @param $data
+     * @return array
+     */
+    public function transform($data): array
+    {
+        $result = [];
+        if (method_exists($this, 'execTransform')) {
+            $result = call_user_func(array($this, 'execTransform'), $data);
+        } elseif ($data instanceof Model) {
+            $result = $data->attributesToArray();
 
-	protected $appends = [];
+            // 日期
+            if ($dates = $data->getDates()) {
+                foreach ($dates as $date) {
+                    $result[$date] = (string)$data->$date;
+                }
+            }
+        } elseif ($data instanceof Arrayable) {
+            $result = $data->toArray();
+        } elseif (is_array($data)) {
+            $result = $data;
+        } elseif (is_object($data)) {
+            $result = (array)$data;
+        }
 
-	/**
-	 * 默认排除项
-	 *
-	 * @return array
-	 */
-	protected function defaultExcepts()
-	{
-		return ['deleted_at'];
-	}
+        // 转换字段
+        $result = array_format($result, $this->casts);
 
-	/**
-	 * 转换
-	 *
-	 * @param $data
-	 * @return array
-	 */
-	public function transform($data)
-	{
-		$result = [];
-		if (method_exists($this, 'execTransform')) {
-			$result = call_user_func(array($this, 'execTransform'), $data);
-		} elseif ($data instanceof Model) {
-			$result = $data->attributesToArray();
+        // 筛选字段
+        if (!empty($this->only)) {
+            $result = Arr::only($result, $this->only);
+        } else {
+            $excepts = array_merge($this->excepts, $this->defaultExcepts());
+            $result = Arr::except($result, $excepts);
+        }
 
-			// 日期
-			if ($dates = $data->getDates()) {
-				foreach ($dates as $date) {
-					$result[$date] = (string) $data->$date;
-				}
-			}
-		} elseif ($data instanceof Arrayable) {
-			$result = $data->toArray();
-		} elseif (is_array($data)) {
-			$result = $data;
-		} elseif (is_object($data)) {
-			$result = (array)$data;
-		}
+        foreach ($this->appends as $field) {
+            $result[$field] = $data->$field;
+        }
 
-		// 转换字段
-		$result = array_format($result, $this->casts);
+        // 统一NULL为空字符串
+        foreach (array_keys($result) as $key) {
+            if (is_null($result[$key])) {
+                $result[$key] = '';
+            }
+        }
 
-		// 筛选字段
-		if (!empty($this->only)) {
-			$result = Arr::only($result, $this->only);
-		} else {
-			$excepts = array_merge($this->excepts, $this->defaultExcepts());
-			$result = Arr::except($result, $excepts);
-		}
+        return $result;
+    }
 
-		foreach ($this->appends as $field) {
-			$result[$field] = $data->$field;
-		}
+    /**
+     * 默认排除项
+     * @return array
+     */
+    protected function defaultExcepts(): array
+    {
+        return ['deleted_at'];
+    }
 
-		// 统一NULL为空字符串
-		foreach (array_keys($result) as $key) {
-			if (is_null($result[$key])) {
-				$result[$key] = '';
-			}
-		}
+    /**
+     * 获取可用includes
+     * @return array
+     */
+    public function getAvailableIncludes(): array
+    {
+        $includes = parent::getAvailableIncludes();
 
-		return $result;
-	}
+        // 添加扩展includes
+        $extends = static::$extendIncludes[static::class] ?? null;
+        if ($extends) {
+            $includes = array_merge($includes, array_keys($extends));
+        }
+        return $includes;
+    }
 
-	/**
-	 * 包含对象
-	 * @param $data
-	 * @param TransformerAbstract|NULL $transformer
-	 * @return \League\Fractal\Resource\Item
-	 */
-	protected function includeItem($data, TransformerAbstract $transformer = NULL)
-	{
-		if (!empty($data)) {
-			if (empty($transformer)) {
-				$class = self::defaultTransformer($data);
-				$transformer = new $class;
-			}
+    /*
+     * 外部扩展includes
+     *
+     * ************************************************************************************************
+     */
 
-			return $this->item($data, $transformer);
-		}
-	}
+    public function __call($name, $arguments)
+    {
+        if (Str::startsWith($name, 'include')) {
+            $include = Str::snake(Str::replaceFirst('include', '', $name));
+            /* @var $resolver Closure */
+            if ($resolver = static::$extendIncludes[static::class][$include] ?? null) {
+                return $resolver->call($this, ... $arguments);
+            }
+        }
 
-	/**
-	 * 包含列表
-	 * @param $data
-	 * @param TransformerAbstract|NULL $transformer
-	 * @return \League\Fractal\Resource\Collection
-	 */
-	protected function includeCollection($data, TransformerAbstract $transformer = NULL)
-	{
-		if (!empty($data)) {
-			if (empty($transformer)) {
-				$item = [];
-				if (is_array($data)) {
-					$item = Arr::first($data);
-				} elseif ($data instanceof Collection) {
-					$item = $data->first();
-				}
+        return null;
+    }
 
-				$class = self::defaultTransformer($item);
-				$transformer = new $class;
-			}
+    /**
+     * 包含对象
+     * @param                          $data
+     * @param TransformerAbstract|NULL $transformer
+     * @return Item
+     */
+    protected function includeItem($data, TransformerAbstract $transformer = NULL): Item
+    {
+        if (!empty($data)) {
+            if (empty($transformer)) {
+                $class = self::defaultTransformer($data);
+                $transformer = new $class;
+            }
 
-			return $this->collection($data, $transformer);
-		}
-	}
+            return $this->item($data, $transformer);
+        }
 
-	/**
-	 * 获取默认转化器
-	 *
-	 * @param $data
-	 * @param string $type 转化器类型
-	 * @return string
-	 */
-	public static function defaultTransformer($data, $type = '')
-	{
-		if (is_object($data)) {
-			$class = get_class($data);
+        return new Item([], $this);
+    }
 
-			// Model类指定的默认转化器
-			if (property_exists($class, 'defaultTransformer')) {
-				return $class::$defaultTransformer;
-			}
+    /**
+     * 获取默认转化器
+     * @param        $data
+     * @param string $type 转化器类型
+     * @return string
+     */
+    public static function defaultTransformer($data, string $type = ''): string
+    {
+        if (is_object($data)) {
+            $class = get_class($data);
 
-			// 指定类型
-			$transformerClass = Str::replaceFirst('Models', 'Transformers', $class) . ucwords($type) . 'Transformer';
-			if (class_exists($transformerClass)) {
-				return $transformerClass;
-			}
+            // Model类指定的默认转化器
+            if (property_exists($class, 'defaultTransformer')) {
+                return $class::$defaultTransformer;
+            }
 
-			// 不指定类型
-			$transformerClass = Str::replaceFirst('Models', 'Transformers', $class) . 'Transformer';
-			if (class_exists($transformerClass)) {
-				return $transformerClass;
-			}
-		}
+            // 指定类型
+            $transformerClass = Str::replaceFirst('Models', 'Transformers', $class) . ucwords($type) . 'Transformer';
+            if (class_exists($transformerClass)) {
+                return $transformerClass;
+            }
 
-		// 通用转化器
-		return self::class;
-	}
+            // 不指定类型
+            $transformerClass = Str::replaceFirst('Models', 'Transformers', $class) . 'Transformer';
+            if (class_exists($transformerClass)) {
+                return $transformerClass;
+            }
+        }
 
-	/*
-	 * 外部扩展includes
-	 *
-	 * ************************************************************************************************
-	 */
+        // 通用转化器
+        return self::class;
+    }
 
-	/**
-	 * 扩展include定义
-	 *
-	 * @var array
-	 */
-	protected static $extendIncludes = [];
+    /**
+     * 包含列表
+     * @param                          $data
+     * @param TransformerAbstract|NULL $transformer
+     * @return \League\Fractal\Resource\Collection
+     */
+    protected function includeCollection($data, TransformerAbstract $transformer = NULL): \League\Fractal\Resource\Collection
+    {
+        if (!empty($data)) {
+            if (empty($transformer)) {
+                $item = [];
+                if (is_array($data)) {
+                    $item = Arr::first($data);
+                } elseif ($data instanceof Collection) {
+                    $item = $data->first();
+                }
 
-	/**
-	 * 定义一个扩展的include
-	 *
-	 * @param string $name
-	 * @param \Closure $callback
-	 * @return void
-	 */
-	public static function extendInclude($name, Closure $callback)
-	{
-		static::$extendIncludes = array_replace_recursive(
-			static::$extendIncludes,
-			[static::class => [$name => $callback]]
-		);
-	}
+                $class = self::defaultTransformer($item);
+                $transformer = new $class;
+            }
 
-	/**
-	 * 获取可用includes
-	 * @return array
-	 */
-	public function getAvailableIncludes()
-	{
-		$includes = parent::getAvailableIncludes();
+            return $this->collection($data, $transformer);
+        }
 
-		// 添加扩展includes
-		$extends = static::$extendIncludes[static::class] ?? null;
-		if ($extends) {
-			$includes = array_merge($includes, array_keys($extends));
-		}
-		return $includes;
-	}
-
-	public function __call($name, $arguments)
-	{
-		if (Str::startsWith($name, 'include')) {
-			$include = Str::snake(Str::replaceFirst('include', '', $name));
-			/* @var $resolver Closure */
-			if ($resolver = static::$extendIncludes[static::class][$include] ?? null) {
-				return $resolver->call($this, ... $arguments);
-			}
-		}
-
-		return null;
-	}
+        return new \League\Fractal\Resource\Collection([], $this);
+    }
 }

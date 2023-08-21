@@ -11,19 +11,19 @@ use Illuminate\Support\Collection;
  */
 class ScheduleRegistry extends Collection
 {
-	/**
-	 * 注册
-	 *
-	 * @param Schedule $schedule
-	 */
-	public function register(Schedule $schedule)
-	{
-		foreach ($this->items as $class) {
-			$instance = new $class($schedule);
+    /**
+     * 注册
+     *
+     * @param Schedule $schedule
+     */
+    public function register(Schedule $schedule): void
+    {
+        foreach ($this->items as $class) {
+            $instance = new $class($schedule);
 
-			if ($instance instanceof Scheduling) {
-				$instance->schedule();
-			}
-		}
-	}
+            if ($instance instanceof Scheduling) {
+                $instance->schedule();
+            }
+        }
+    }
 }

@@ -11,17 +11,17 @@ use GuzzleHttp\Psr7\Response;
  */
 class UnableToExecuteRequestException extends Exception
 {
-	/**
-	 * UnableToExecuteRequestException constructor.
-	 * @param Response $response
-	 */
-	public function __construct(Response $response = null)
-	{
-		if ($response) {
-			parent::__construct((string)$response->getBody(), $response->getStatusCode());
-			return;
-		}
+    /**
+     * UnableToExecuteRequestException constructor.
+     * @param Response|null $response
+     */
+    public function __construct(Response $response = null)
+    {
+        if ($response) {
+            parent::__construct((string)$response->getBody(), $response->getStatusCode());
+            return;
+        }
 
-		parent::__construct('Unable to finish the request', 502);
-	}
+        parent::__construct('Unable to finish the request', 502);
+    }
 }

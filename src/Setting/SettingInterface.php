@@ -8,20 +8,21 @@ namespace ZhuiTech\BootLaravel\Setting;
  */
 interface SettingInterface
 {
-	/**
-	 * @param array $settings
-	 * @return mixed
-	 */
-	public function setSetting(array $settings);
+    /**
+     * @param array $settings
+     * @return mixed
+     */
+    public function setSetting(array $settings): mixed;
 
-	/**
-	 * @param $key
-	 * @return mixed
-	 */
-	public function getSetting($key, $input = null);
+    /**
+     * @param      $key
+     * @param null $input
+     * @return mixed
+     */
+    public function getSetting($key, $input = null): mixed;
 
-	/**
-	 * @return mixed
-	 */
-	public function allToArray();
+    /**
+     * @return mixed
+     */
+    public function allToArray(): mixed;
 }

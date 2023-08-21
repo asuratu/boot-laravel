@@ -11,3 +11,4 @@ vendor
 _ide_helper.php
 tmp
 git.sh
+*.cache

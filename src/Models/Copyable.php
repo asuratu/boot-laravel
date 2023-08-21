@@ -11,16 +11,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 interface Copyable
 {
-	/**
-	 * 生成快照
-	 * @return array
-	 */
-	public function snapshot();
+    /**
+     * 生成快照
+     * @return array
+     */
+    public function snapshot(): array;
 
-	/**
-	 * 从快照复制
-	 * @param $data array
-	 * @return Model
-	 */
-	public function copy($data);
+    /**
+     * 从快照复制
+     * @param $data array
+     * @return Model
+     */
+    public function copy(array $data): Model;
 }

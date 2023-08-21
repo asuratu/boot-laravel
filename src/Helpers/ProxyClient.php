@@ -2,6 +2,7 @@
 
 namespace ZhuiTech\BootLaravel\Helpers;
 
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Str;
 
@@ -12,65 +13,67 @@ use Illuminate\Support\Str;
  */
 class ProxyClient extends RestClient
 {
-	private function buildOptions(): array
+    /**
+     * 返回原始请求
+     * @param null $url
+     * @param null $method
+     * @return Response
+     * @throws GuzzleException
+     */
+    public function pass($url = null, $method = null): Response
     {
-		$request = request();
+        $request = request();
+        $url = $url ?? $request->path();
+        $method = $method ?? strtoupper($request->server->get('REQUEST_METHOD', 'GET'));
 
-		$options = [
-			'allow_redirects' => false,
-			'headers' => [
-				'X-FORWARDED-PROTO' => $request->getScheme(),
-				'X-FORWARDED-HOST' => $request->server('HTTP_HOST'),
-			],
-			'query' => $request->query(),
-		];
-		foreach (['X-PJAX', 'X-PJAX-Container', 'Accept', 'Referer', 'x-requested-with'] as $item) {
-			if ($request->hasHeader($item)) {
-				$options['headers'][$item] = $request->header($item);
-			}
-		}
+        // 注意此处不能用 $request->method()，要完全模拟原始请求
+        $this->plain()->request($url, $method, $this->buildOptions());
+        return $this->getResponse();
+    }
 
-		// Multipart
-		if (Str::startsWith($request->header('Content-Type'), 'multipart/form-data')) {
-			$options['multipart'] = $this->createMultipart($request->all());
-		} else {
-			// Other
-			$options['headers']['Content-Type'] = $request->header('Content-Type');
-			$options['body'] = $request->getContent();
-		}
-
-		return $options;
-	}
-
-	/**
-	 * 返回原始请求
-	 * @param null $url
-	 * @param null $method
-	 * @return Response
-	 */
-	public function pass($url = null, $method = null): Response
+    private function buildOptions(): array
     {
-		$request = request();
-		$url = $url ?? $request->path();
-		$method = $method ?? strtoupper($request->server->get('REQUEST_METHOD', 'GET'));
+        $request = request();
 
-		// 注意此处不能用 $request->method()，要完全模拟原始请求
-		$this->plain()->request($url, $method, $this->buildOptions());
-		return $this->getResponse();
-	}
+        $options = [
+            'allow_redirects' => false,
+            'headers' => [
+                'X-FORWARDED-PROTO' => $request->getScheme(),
+                'X-FORWARDED-HOST' => $request->server('HTTP_HOST'),
+            ],
+            'query' => $request->query(),
+        ];
+        foreach (['X-PJAX', 'X-PJAX-Container', 'Accept', 'Referer', 'x-requested-with'] as $item) {
+            if ($request->hasHeader($item)) {
+                $options['headers'][$item] = $request->header($item);
+            }
+        }
 
-	/**
-	 * 返回JSON
-	 * @param null $url
-	 * @param null $method
-	 * @return array|mixed
-	 */
-	public function passJson($url = null, $method = null): mixed
+        // Multipart
+        if (Str::startsWith($request->header('Content-Type'), 'multipart/form-data')) {
+            $options['multipart'] = $this->createMultipart($request->all());
+        } else {
+            // Other
+            $options['headers']['Content-Type'] = $request->header('Content-Type');
+            $options['body'] = $request->getContent();
+        }
+
+        return $options;
+    }
+
+    /**
+     * 返回JSON
+     * @param null $url
+     * @param null $method
+     * @return array|mixed
+     * @throws GuzzleException
+     */
+    public function passJson($url = null, $method = null): mixed
     {
-		$request = request();
-		$url = $url ?? $request->path();
-		$method = $method ?? strtoupper($request->server->get('REQUEST_METHOD', 'GET'));
+        $request = request();
+        $url = $url ?? $request->path();
+        $method = $method ?? strtoupper($request->server->get('REQUEST_METHOD', 'GET'));
 
-		return $this->request($url, $method, $this->buildOptions());
-	}
+        return $this->request($url, $method, $this->buildOptions());
+    }
 }

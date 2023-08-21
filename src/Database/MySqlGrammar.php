@@ -1,31 +1,30 @@
 <?php
+
 namespace ZhuiTech\BootLaravel\Database;
 
-use Illuminate\Support\Fluent;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\MySqlGrammar as BaseMySqlGrammar;
+use Illuminate\Support\Fluent;
 
 class MySqlGrammar extends BaseMySqlGrammar
 {
     /**
      * Compile a create table command.
      *
-     * @param  \Illuminate\Database\Schema\Blueprint $blueprint
-     * @param  \Illuminate\Support\Fluent $command
-     * @param  \Illuminate\Database\Connection $connection
-     * @param string $comment
+     * @param Blueprint  $blueprint
+     * @param Fluent     $command
+     * @param Connection $connection
      * @return array
      */
-    public function compileCreate(Blueprint $blueprint, Fluent $command, Connection $connection)
+    public function compileCreate(Blueprint $blueprint, Fluent $command, Connection $connection): array
     {
         $sql = parent::compileCreate($blueprint, $command, $connection);
 
         // 添加注释
-        if (isset($blueprint->comment))
-        {
+        if (isset($blueprint->comment)) {
             $blueprint->comment = str_replace("'", "\'", $blueprint->comment);
-            $sql[] = 'alter table '.$this->wrapTable($blueprint->getTable())." comment = '".$blueprint->comment."'";
+            $sql[] = 'alter table ' . $this->wrapTable($blueprint->getTable()) . " comment = '" . $blueprint->comment . "'";
         }
 
         return $sql;
@@ -36,10 +35,10 @@ class MySqlGrammar extends BaseMySqlGrammar
      * 重载typeInteger
      * Create the column definition for an integer type.
      *
-     * @param  \Illuminate\Support\Fluent $column
+     * @param Fluent $column
      * @return string
      */
-    public function typeInteger(Fluent $column)
+    public function typeInteger(Fluent $column): string
     {
         $length_str = !empty($column->length) ? '(' . $column->length . ')' : '';
 
@@ -50,10 +49,10 @@ class MySqlGrammar extends BaseMySqlGrammar
      * 重载typeBigInteger
      * Create the column definition for a big integer type.
      *
-     * @param  \Illuminate\Support\Fluent $column
+     * @param Fluent $column
      * @return string
      */
-    protected function typeBigInteger(Fluent $column)
+    protected function typeBigInteger(Fluent $column): string
     {
         $length_str = !empty($column->length) ? '(' . $column->length . ')' : '';
 
@@ -64,10 +63,10 @@ class MySqlGrammar extends BaseMySqlGrammar
      * 重载typeMediumInteger
      * Create the column definition for a medium integer type.
      *
-     * @param  \Illuminate\Support\Fluent $column
+     * @param Fluent $column
      * @return string
      */
-    protected function typeMediumInteger(Fluent $column)
+    protected function typeMediumInteger(Fluent $column): string
     {
         $length_str = !empty($column->length) ? '(' . $column->length . ')' : '';
 
@@ -78,10 +77,10 @@ class MySqlGrammar extends BaseMySqlGrammar
      * 重载typeTinyInteger
      * Create the column definition for a tiny integer type.
      *
-     * @param  \Illuminate\Support\Fluent $column
+     * @param Fluent $column
      * @return string
      */
-    protected function typeTinyInteger(Fluent $column)
+    protected function typeTinyInteger(Fluent $column): string
     {
         $length_str = !empty($column->length) ? '(' . $column->length . ')' : '';
 
@@ -92,10 +91,10 @@ class MySqlGrammar extends BaseMySqlGrammar
      * 重载typeSmallInteger
      * Create the column definition for a small integer type.
      *
-     * @param  \Illuminate\Support\Fluent $column
+     * @param Fluent $column
      * @return string
      */
-    protected function typeSmallInteger(Fluent $column)
+    protected function typeSmallInteger(Fluent $column): string
     {
         $length_str = !empty($column->length) ? '(' . $column->length . ')' : '';
 

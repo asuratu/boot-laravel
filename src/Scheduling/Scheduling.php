@@ -9,23 +9,23 @@ use Illuminate\Console\Scheduling\Schedule;
  */
 abstract class Scheduling
 {
-	/**
-	 * @var Schedule
-	 */
-	protected $schedule;
+    /**
+     * @var Schedule
+     */
+    protected Schedule $schedule;
 
-	/**
-	 * Scheduling constructor.
-	 *
-	 * @param Schedule $schedule
-	 */
-	public function __construct(Schedule $schedule)
-	{
-		$this->schedule = $schedule;
-	}
+    /**
+     * Scheduling constructor.
+     *
+     * @param Schedule $schedule
+     */
+    public function __construct(Schedule $schedule)
+    {
+        $this->schedule = $schedule;
+    }
 
-	/**
-	 * 注册定时任务
-	 */
-	abstract public function schedule();
+    /**
+     * 注册定时任务
+     */
+    abstract public function schedule();
 }

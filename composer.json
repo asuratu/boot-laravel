@@ -10,11 +10,13 @@
     }
   ],
   "require": {
+    "bkwld/croppa": "^6.0",
+    "ext-curl": "*",
+    "ext-iconv": "*",
     "guzzlehttp/guzzle": "^7.2",
     "laravel/framework": "^9.0",
-    "bkwld/croppa": "^6.0",
     "league/fractal": "^0.20.1",
-    "ext-curl": "*"
+    "prettus/l5-repository": "^2.9"
   },
   "autoload": {
     "psr-4": {
@@ -25,7 +27,6 @@
     ]
   },
   "require-dev": {
-    "barryvdh/laravel-ide-helper": "^2.13",
     "friendsofphp/php-cs-fixer": "^3.22"
   }
 }

@@ -58,9 +58,9 @@ class RestClient
 
     /**
      * 日志名
-     * @var Logger|null
+     * @var string|null
      */
-    protected ?Logger $logName = NULL;
+    protected ?string $logName = NULL;
 
     /**
      * 日志对象
@@ -83,7 +83,7 @@ class RestClient
      * 代理模式
      * @var bool
      */
-    protected $proxy = true;
+    protected bool $proxy = true;
 
     /*Fluent***********************************************************************************************************/
 
@@ -106,7 +106,7 @@ class RestClient
         return $instance;
     }
 
-    public function client($client)
+    public function client($client): static
     {
         $this->client = $client;
         return $this;
@@ -118,7 +118,7 @@ class RestClient
      * @param array $defaults
      * @return $this
      */
-    public function options($defaults = [])
+    public function options(array $defaults = []): static
     {
         $this->defaults = array_merge(self::$globals, $defaults);
         return $this;
@@ -130,7 +130,7 @@ class RestClient
      * @param UserContract $user
      * @return $this
      */
-    public function as(UserContract $user)
+    public function as(UserContract $user): static
     {
         $this->user = $user;
         return $this;
@@ -142,7 +142,7 @@ class RestClient
      * @param bool $plain
      * @return $this
      */
-    public function plain($plain = true)
+    public function plain(bool $plain = true): static
     {
         $this->plain = $plain;
         return $this;
@@ -153,7 +153,7 @@ class RestClient
      * @param bool $proxy
      * @return $this
      */
-    public function proxy($proxy = true)
+    public function proxy(bool $proxy = true): static
     {
         $this->proxy = $proxy;
         return $this;
@@ -166,7 +166,7 @@ class RestClient
      * @param array $queries
      * @return array|mixed
      */
-    public function get($url, array $queries = [])
+    public function get($url, array $queries = []): mixed
     {
         return $this->request($url, 'GET', [
             'query' => $queries
@@ -178,11 +178,10 @@ class RestClient
     /**
      * Make a request.
      *
-     * @param        $path
+     * @param string $path
      * @param string $method
      * @param array  $options
      * @return array|mixed
-     * @throws RestCodeException|GuzzleException
      */
     public function request(string $path, string $method = 'GET', array $options = []): mixed
     {
@@ -222,9 +221,7 @@ class RestClient
             } else {
                 throw new RestCodeException(REST_REMOTE_FAIL, $e->getMessage());
             }
-        } catch (GuzzleException $e) {
-            throw new RestCodeException(REST_REMOTE_FAIL, $e->getMessage());
-        } catch (Exception $e) {
+        } catch (GuzzleException|Exception $e) {
             throw new RestCodeException(REST_REMOTE_FAIL, $e->getMessage());
         }
 
@@ -271,18 +268,6 @@ class RestClient
 
     protected function getClient(): HttpClient
     {
-        if (!($this->client instanceof HttpClient)) {
-            // 创建处理器
-            $handlerStack = HandlerStack::create();
-            if (!empty($this->getLogger())) {
-                $handlerStack->push(
-                    Middleware::log($this->getLogger(), new MessageFormatter('{method} {uri} HTTP/{version} {req_body} RESPONSE: {code} - {res_body}'))
-                );
-            }
-
-            $this->client = new HttpClient(['handler' => $handlerStack]);
-        }
-
         return $this->client;
     }
 
@@ -300,7 +285,7 @@ class RestClient
             }
 
             $this->logger = with(new Logger(app()->environment()))->pushHandler(
-                new RotatingFileHandler(storage_path("logs/{$logName}.log"), config('app.log_max_files'))
+                new RotatingFileHandler(storage_path("logs/$logName.log"), config('app.log_max_files'))
             );
         }
 
@@ -351,7 +336,7 @@ class RestClient
      * @param array $queries
      * @return array|mixed
      */
-    public function put($url, array $data = [], array $queries = [])
+    public function put($url, array $data = [], array $queries = []): mixed
     {
         return $this->request($url, 'PUT', [
             'query' => $queries,
@@ -414,7 +399,7 @@ class RestClient
         $return = [];
         foreach ($parameters as $name => $value) {
             $item = [
-                'name' => empty($prefix) ? $name : "{$prefix}[{$name}]",
+                'name' => empty($prefix) ? $name : "{$prefix}[$name]",
             ];
 
             if (($value instanceof UploadedFile)) {

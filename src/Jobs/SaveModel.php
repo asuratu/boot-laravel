@@ -11,36 +11,31 @@ use Illuminate\Queue\SerializesModels;
 
 class SaveModel implements ShouldQueue
 {
-	use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-	protected $class;
+    protected string $class;
 
-	protected $attributes;
+    protected array $attributes;
 
-	protected $model;
+    protected Model $model;
 
-	protected $changes;
+    protected array $changes;
 
-	public function __construct(Model $model)
-	{
-		$this->changes = $model->getDirty();
+    public function __construct(Model $model)
+    {
+        $this->changes = $model->getDirty();
 
-		// 新对象不能序列化，保存类名
-		if ($model->exists) {
-			$this->model = $model;
-		} else {
-			$this->class = get_class($model);
-		}
-	}
+        // 新对象不能序列化，保存类名
+        if ($model->exists) {
+            $this->model = $model;
+        } else {
+            $this->class = get_class($model);
+        }
+    }
 
-	public function handle()
-	{
-		// 构建新对象
-		if (!$this->model && $this->class) {
-			$this->model = new $this->class;
-		}
-
-		$this->model->fill($this->changes);
-		$this->model->save();
-	}
+    public function handle(): void
+    {
+        $this->model->fill($this->changes);
+        $this->model->save();
+    }
 }

@@ -14,19 +14,19 @@ use Illuminate\Support\Facades\App;
  */
 class Language
 {
-	/**
-	 * @param Request $request
-	 * @param Closure $next
-	 * @return mixed
-	 */
-	public function handle($request, Closure $next)
-	{
-		$lang = $request->header('X-Language');
+    /**
+     * @param Request $request
+     * @param Closure $next
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next): mixed
+    {
+        $lang = $request->header('X-Language');
 
-		if (!empty($lang)) {
-			App::setLocale($lang);
-		}
+        if (!empty($lang)) {
+            App::setLocale($lang);
+        }
 
-		return $next($request);
-	}
+        return $next($request);
+    }
 }
