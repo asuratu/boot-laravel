@@ -143,7 +143,7 @@ abstract class RestController extends Controller
     protected function execIndex($data): mixed
     {
         // TODO 重写查询逻辑
-        return;
+        return null;
     }
 
     /**
@@ -371,7 +371,7 @@ abstract class RestController extends Controller
         // $this->repository->pushCriteria(new QueryCriteria($data));
         // $result = $this->repository->findBy($field, $value);
         // return $result;
-        return '';
+        return null;
     }
 
     // Find ************************************************************************************************************

@@ -51,7 +51,7 @@ trait RestResponse
      * @param null                   $message
      * @return JsonResponse
      */
-    protected function error($code, array|ResourceAbstract $data = [], $message = NULL): JsonResponse
+    protected function error($code, array|ResourceAbstract $data = [], $message = null): JsonResponse
     {
         $result = Restful::format($data, false, $code, $message);
 
@@ -76,7 +76,7 @@ trait RestResponse
      * @param null                   $message
      * @return JsonResponse
      */
-    protected function api(array|ResourceAbstract $data = [], bool $status = true, int $code = REST_SUCCESS, $message = NULL): JsonResponse
+    protected function api(array|ResourceAbstract $data = [], bool $status = true, int $code = REST_SUCCESS, $message = null): JsonResponse
     {
         $result = Restful::format($data, $status, $code, $message);
         return response()->json($result);
@@ -88,7 +88,7 @@ trait RestResponse
      * @param array $data
      * @return JsonResponse
      */
-    protected function fail($message = NULL, array $data = []): JsonResponse
+    protected function fail($message = null, array $data = []): JsonResponse
     {
         return self::api($data, false, REST_FAIL, $message);
     }
@@ -99,7 +99,7 @@ trait RestResponse
      * @param TransformerAbstract|null $transformer
      * @return Collection
      */
-    protected function transformList($list, TransformerAbstract $transformer = NULL): Collection
+    protected function transformList($list, TransformerAbstract $transformer = null): Collection
     {
         if (empty($transformer)) {
             $transformer = new $this->listTransformer;
@@ -121,7 +121,7 @@ trait RestResponse
      * @param TransformerAbstract|null $transformer
      * @return Item|null
      */
-    protected function transformItem($item, TransformerAbstract $transformer = NULL): ?Item
+    protected function transformItem($item, TransformerAbstract $transformer = null): ?Item
     {
         if (empty($transformer)) {
             $transformer = new $this->transformer;
