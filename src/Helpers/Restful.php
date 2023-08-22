@@ -17,17 +17,17 @@ class Restful
      * @param array|ResourceAbstract $data
      * @param bool                   $status
      * @param int                    $code
-     * @param null                   $message
+     * @param null                   $msg
      * @return array
      */
-    public static function format(array|ResourceAbstract $data = [], bool $status = true, int $code = REST_SUCCESS, $message = NULL): array
+    public static function format(array|ResourceAbstract $data = [], bool $status = true, int $code = REST_SUCCESS, $msg = null): array
     {
         $errors = config('boot-laravel.errors');
 
         $result = [
             'status' => $status,
             'code' => $code,
-            'message' => $message ?? $errors[$code],
+            'msg' => $msg ?? $errors[$code],
         ];
 
         if ($data instanceof ResourceAbstract) {
@@ -51,14 +51,14 @@ class Restful
      * @return mixed
      * @deprecated
      */
-    public static function handle(array $result, callable $success = NULL, callable $fail = NULL): mixed
+    public static function handle(array $result, callable $success = null, callable $fail = null): mixed
     {
-        if ($result['status'] === true && $success != NULL) {
-            return $success($result['data'], $result['message'], $result['code']);
+        if ($result['status'] === true && $success != null) {
+            return $success($result['data'], $result['msg'], $result['code']);
         }
 
-        if ($result['status'] === false && $fail != NULL) {
-            return $fail($result['data'], $result['message'], $result['code']);
+        if ($result['status'] === false && $fail != null) {
+            return $fail($result['data'], $result['msg'], $result['code']);
         }
         return null;
     }
