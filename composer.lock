@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "181eb3bd1d1267ede5593dfafb9997e3",
+    "content-hash": "8647911ed823d94b0a49d5fc54ee301a",
     "packages": [
         {
             "name": "bkwld/croppa",
