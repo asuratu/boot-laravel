@@ -336,7 +336,7 @@ if (!function_exists('short_number')) {
         if ($number >= 10000) {
             $number = round($number / 10000, $decimals);
             return number_format($number, $number != (int)$number ? $decimals : 0) . 'W';
-        } else if ($number >= 1000) {
+        } elseif ($number >= 1000) {
             $number = round($number / 1000, $decimals);
             return number_format($number, $number != (int)$number ? $decimals : 0) . 'K';
         } else {
@@ -361,7 +361,7 @@ if (!function_exists('unique_no')) {
      */
     function unique_no(string $prefix = 'O'): string
     {
-        $uniqid = substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13)))), 0, 8);
+        $uniqid = substr(implode(null, array_map('ord', str_split(substr(uniqid(), 7, 13)))), 0, 8);
         return $prefix . date('Ymd') . $uniqid . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
     }
 }
@@ -418,13 +418,13 @@ if (!function_exists('var_export_new')) {
      * @param bool  $return
      * @return string|null
      */
-    function var_export_new(mixed $expression, bool $return = FALSE): ?string
+    function var_export_new(mixed $expression, bool $return = false): ?string
     {
-        $export = var_export($expression, TRUE);
+        $export = var_export($expression, true);
         $export = preg_replace("/^( *)(.*)/m", '$1$1$2', $export);
 
         $array = preg_split("/\r\n|\n|\r/", $export);
-        $array = preg_replace(["/\s*array\s\($/", "/\)(,)?$/", "/\s=>\s$/"], [NULL, ']$1', ' => ['], $array);
+        $array = preg_replace(["/\s*array\s\($/", "/\)(,)?$/", "/\s=>\s$/"], [null, ']$1', ' => ['], $array);
         $array = preg_replace("/\d+ =>/", '', $array);
 
         $export = join(PHP_EOL, array_filter(["["] + $array));
@@ -439,30 +439,34 @@ if (!function_exists('var_export_new')) {
 
 if (!function_exists('is_mobile')) {
     /**
-     * isMobile函数:检测参数的值是否为正确的中国手机号码格式
+     * is_mobile:检测参数的值是否为正确的中国手机号码格式
      * 返回值:是正确的手机号码返回手机号码,不是返回false
      *
-     * @param string $arg
+     * @param  $mobile
      * @return bool
      */
-    function is_mobile(string $arg): bool
+    function is_mobile($mobile): bool
     {
-        $RegExp = '/^(\+?0?86-?)?((13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7})$/';
-        return preg_match($RegExp, $arg) ? $arg : false;
+        if (empty($mobile)) {
+            return false;
+        }
+        return (bool)preg_match('/^1[3456789]\d{9}$/', $mobile);
     }
 }
 
-if (!function_exists('is_mail')) {
+if (!function_exists('is_email')) {
     /**
-     * isMail函数:检测是否为正确的邮件格式
+     * is_email:检测是否为正确的邮件格式
      * 返回值:是正确的邮件格式返回邮件,不是返回false
-     * @param string $arg
+     * @param $email
      * @return bool|string
      */
-    function is_mail(string $arg): bool|string
+    function is_email($email): bool|string
     {
-        $RegExp = '/^([a-zA-Z0-9_.\-+])+@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/';
-        return preg_match($RegExp, $arg) ? $arg : false;
+        if (empty($email)) {
+            return false;
+        }
+        return (bool)preg_match('/^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/', $email);
     }
 }
 
