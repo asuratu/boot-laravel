@@ -41,7 +41,7 @@ return [
 
         REST_NOT_LOGIN => '没有登录',
         REST_NOT_AUTH => '您没有权限进行该操作',
-        REST_NOT_FOUND => '找不到请求的资源',
+        REST_NOT_FOUND => '您访问的内容已不存在',
 
         REST_OBJ_NOT_EXIST => '对象不存在',
         REST_OBJ_CREATE_FAIL => '对象创建失败',
