@@ -40,7 +40,7 @@ return [
         REST_FAIL => '请求失败',
 
         REST_NOT_LOGIN => '没有登录',
-        REST_NOT_AUTH => '没有权限',
+        REST_NOT_AUTH => '您没有权限进行该操作',
         REST_NOT_FOUND => '找不到请求的资源',
 
         REST_OBJ_NOT_EXIST => '对象不存在',

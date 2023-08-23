@@ -49,7 +49,7 @@ class AdvancedHandler extends ExceptionHandler
      *
      * @param Request                 $request
      * @param AuthenticationException $exception
-     * @return RedirectResponse|JsonResponse
+     * @return JsonResponse|RedirectResponse
      */
     protected function unauthenticated($request, AuthenticationException $exception): JsonResponse|RedirectResponse
     {
@@ -64,9 +64,13 @@ class AdvancedHandler extends ExceptionHandler
      * @param null $message
      * @return array
      */
-    private function error(int $code = REST_EXCEPTION, $message = NULL): array
+    private function error(int $code = REST_EXCEPTION, $message = null): array
     {
         $errors = config('boot-laravel.errors');
+
+        if ($code === 404) {
+            $message = '您访问的内容已不存在';
+        }
 
         return [
             'status' => false,
@@ -100,6 +104,40 @@ class AdvancedHandler extends ExceptionHandler
     }
 
     /**
+     * Prepare a response for the given exception.
+     *
+     * @param Request   $request
+     * @param Throwable $e
+     * @return Response
+     */
+    protected function prepareResponse($request, Throwable $e): Response
+    {
+        // 调试模式
+        if (!$this->isHttpException($e) && config('app.debug')) {
+            return $this->toIlluminateResponse(
+                $this->convertExceptionToResponse($e),
+                $e
+            );
+        }
+
+        // 转化成 500 错误，并显示对应消息
+        if ($e instanceof RestCodeException) {
+            $e = new HttpException(500, $e->getMessage());
+        }
+
+        // 转换成 500 错误，但是隐藏错误信息
+        if (!$this->isHttpException($e)) {
+            $e = new HttpException(500, get_class($e));
+        }
+
+        $array = $this->convertExceptionToArray($e);
+        return $this->toIlluminateResponse(
+            new JsonResponse($array, $array['code']),
+            $e
+        );
+    }
+
+    /**
      * Convert the given exception to an array.
      *
      * @param Throwable $e
@@ -130,36 +168,5 @@ class AdvancedHandler extends ExceptionHandler
                 return Arr::except($trace, ['args']);
             })->all(),
         ]) : $this->error();
-    }
-
-    /**
-     * Prepare a response for the given exception.
-     *
-     * @param Request   $request
-     * @param Throwable $e
-     * @return Response
-     */
-    protected function prepareResponse($request, Throwable $e): Response
-    {
-        // 调试模式
-        if (!$this->isHttpException($e) && config('app.debug')) {
-            return $this->toIlluminateResponse(
-                $this->convertExceptionToResponse($e), $e
-            );
-        }
-
-        // 转化成 500 错误，并显示对应消息
-        if ($e instanceof RestCodeException) {
-            $e = new HttpException(500, $e->getMessage());
-        }
-
-        // 转换成 500 错误，但是隐藏错误信息
-        if (!$this->isHttpException($e)) {
-            $e = new HttpException(500, get_class($e));
-        }
-
-        return $this->toIlluminateResponse(
-            $this->renderHttpException($e), $e
-        );
     }
 }

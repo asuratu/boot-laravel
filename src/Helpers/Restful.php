@@ -4,6 +4,7 @@ namespace ZhuiTech\BootLaravel\Helpers;
 
 use League\Fractal\Manager;
 use League\Fractal\Resource\ResourceAbstract;
+use stdClass;
 
 /**
  * Restful 实用方法
@@ -36,7 +37,7 @@ class Restful
             $result += $fractal->createData($data)->toArray();
         } else {
             $result += [
-                'data' => is_array($data) && empty($data) ? null : $data
+                'data' => is_array($data) && empty($data) ? (new stdClass()) : $data
             ];
         }
 

@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use League\Fractal\Manager;
 use ReflectionException;
-use ZhuiTech\BootLaravel\Console\Commands\PassportInstall;
 use ZhuiTech\BootLaravel\Exceptions\AdvancedHandler;
 use ZhuiTech\BootLaravel\Middleware\Intranet;
 use ZhuiTech\BootLaravel\Middleware\Language;
@@ -35,9 +34,7 @@ class LaravelProvider extends AbstractServiceProvider
 {
     protected array $providers = [];
 
-    protected array $commands = [
-        PassportInstall::class
-    ];
+    protected array $commands = [];
 
     /**
      * Bootstrap the application services.
