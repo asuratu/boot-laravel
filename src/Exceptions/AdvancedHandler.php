@@ -44,24 +44,6 @@ class AdvancedHandler extends ExceptionHandler
         });
 
         $this->renderable(function (Throwable $e, $request) {
-            // 可渲染异常
-            if (method_exists($e, 'render')) {
-                return $e->render($request);
-            }
-            if ($e instanceof Responsable) {
-                return $e->toResponse($request);
-            }
-            if ($e instanceof HttpResponseException) {
-                return $e->getResponse();
-            }
-            if ($e instanceof ValidationException) {
-                return $this->invalidJson($request, $e);
-            }
-            if ($e instanceof HttpException) {
-                $rsp = $this->handleHttpException($e);
-                return response()->json($rsp, $e->getStatusCode(), ['Access-Control-Allow-Credentials' => 'true']);
-            }
-
             // 其它异常渲染为 JSON
             $result = $this->error();
             if (config('app.debug')) {
@@ -73,8 +55,37 @@ class AdvancedHandler extends ExceptionHandler
                     })),
                 ];
             }
-            return response()->json($result, 500, ['Access-Control-Allow-Credentials' => 'true']);
+
+            // 可渲染异常
+            return match (true) {
+                method_exists($e, 'render') => $e->render($request),
+                $e instanceof Responsable => $e->toResponse($request),
+                $e instanceof HttpResponseException => $e->getResponse(),
+                $e instanceof ValidationException => $this->invalidJson($request, $e),
+                $e instanceof AuthenticationException => $this->unauthenticated($request, $e),
+                $e instanceof HttpException => response()->json($this->handleHttpException($e), $e->getStatusCode(), ['Access-Control-Allow-Credentials' => 'true']),
+                default => response()->json($result, 500, ['Access-Control-Allow-Credentials' => 'true']),
+            };
         });
+    }
+
+    /**
+     * 返回错误消息
+     * @param int  $code
+     * @param null $message
+     * @return array
+     */
+    private function error(int $code = REST_EXCEPTION, $message = null): array
+    {
+        $errors = config('boot-laravel.errors');
+
+        return [
+            'status' => false,
+            'code' => $code,
+            'msg' => $message ?? $errors[$code],
+            'data' => '',
+            'request' => request()->fullUrl()
+        ];
     }
 
     /**
@@ -99,23 +110,11 @@ class AdvancedHandler extends ExceptionHandler
         return response()->json(array_merge($this->error(REST_DATA_VALIDATE_FAIL, $message), ['errors' => $errors]));
     }
 
-    /**
-     * 返回错误消息
-     * @param int  $code
-     * @param null $message
-     * @return array
-     */
-    private function error(int $code = REST_EXCEPTION, $message = null): array
+    protected function unauthenticated($request, AuthenticationException $exception): JsonResponse|RedirectResponse
     {
-        $errors = config('boot-laravel.errors');
-
-        return [
-            'status' => false,
-            'code' => $code,
-            'msg' => $message ?? $errors[$code],
-            'data' => '',
-            'request' => request()->fullUrl()
-        ];
+        return $request->expectsJson()
+            ? response()->json($this->error(REST_NOT_LOGIN), 401)
+            : redirect()->guest(route('login'));
     }
 
     protected function handleHttpException(Throwable $e): array
@@ -134,13 +133,6 @@ class AdvancedHandler extends ExceptionHandler
         } else {
             return $this->error(REST_EXCEPTION, $e->getMessage());
         }
-    }
-
-    protected function unauthenticated($request, AuthenticationException $exception): JsonResponse|RedirectResponse
-    {
-        return $request->expectsJson()
-            ? response()->json($this->error(REST_NOT_LOGIN), 401)
-            : redirect()->guest(route('login'));
     }
 
 }
