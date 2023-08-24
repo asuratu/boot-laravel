@@ -23,12 +23,6 @@ use Prettus\Validator\Exceptions\ValidatorException;
 use ZhuiTech\BootLaravel\Exceptions\RestCodeException;
 use ZhuiTech\BootLaravel\Transformers\ModelTransformer;
 
-/**
- * Base class for restfull api.
- *
- * Class RestController
- * @package ZhuiTech\BootLaravel\Controllers
- */
 abstract class RestController extends Controller
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests, RestResponse;
