@@ -15,13 +15,13 @@ class Restful
 {
     /**
      * 格式化数据
-     * @param array|ResourceAbstract $data
-     * @param bool                   $status
-     * @param int                    $code
-     * @param null                   $msg
+     * @param mixed $data
+     * @param bool  $status
+     * @param int   $code
+     * @param null  $msg
      * @return array
      */
-    public static function format(array|ResourceAbstract $data = [], bool $status = true, int $code = REST_SUCCESS, $msg = null): array
+    public static function format(mixed $data = [], bool $status = true, int $code = REST_SUCCESS, $msg = null): array
     {
         $errors = config('boot-laravel.errors');
 

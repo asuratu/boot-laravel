@@ -47,11 +47,11 @@ trait RestResponse
     /**
      * 返回错误代码
      * @param                        $code
-     * @param array|ResourceAbstract $data
+     * @param mixed                  $data
      * @param null                   $message
      * @return JsonResponse
      */
-    protected function error($code, array|ResourceAbstract $data = [], $message = null): JsonResponse
+    protected function error($code, mixed $data = [], $message = null): JsonResponse
     {
         $result = Restful::format($data, false, $code, $message);
 
@@ -60,23 +60,23 @@ trait RestResponse
 
     /**
      * 返回成功消息
-     * @param array|ResourceAbstract $data
+     * @param mixed $data
      * @return JsonResponse
      */
-    protected function success(array|ResourceAbstract $data = []): JsonResponse
+    protected function success(mixed $data = []): JsonResponse
     {
         return self::api($data);
     }
 
     /**
      * API 返回数据
-     * @param array|ResourceAbstract $data
-     * @param bool                   $status
-     * @param int                    $code
-     * @param null                   $message
+     * @param mixed $data
+     * @param bool  $status
+     * @param int   $code
+     * @param null  $message
      * @return JsonResponse
      */
-    protected function api(array|ResourceAbstract $data = [], bool $status = true, int $code = REST_SUCCESS, $message = null): JsonResponse
+    protected function api(mixed $data = [], bool $status = true, int $code = REST_SUCCESS, $message = null): JsonResponse
     {
         $result = Restful::format($data, $status, $code, $message);
         return response()->json($result);
