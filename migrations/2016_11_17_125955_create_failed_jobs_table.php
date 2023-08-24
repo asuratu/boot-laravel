@@ -1,8 +1,9 @@
 <?php
 
-use ZhuiTech\BootLaravel\Database\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CreateFailedJobsTable extends Migration
 {
@@ -21,8 +22,8 @@ class CreateFailedJobsTable extends Migration
             $table->longText('payload')->comment('载荷');
             $table->longText('exception')->comment('异常信息');
             $table->timestamp('failed_at')->comment('失败时间')->useCurrent();
-	        $table->comment = '队列失败任务表';
         });
+        DB::statement("ALTER TABLE `failed_jobs` comment '队列失败任务表'");
     }
 
     /**

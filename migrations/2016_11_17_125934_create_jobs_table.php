@@ -1,8 +1,9 @@
 <?php
 
-use ZhuiTech\BootLaravel\Database\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CreateJobsTable extends Migration
 {
@@ -23,8 +24,8 @@ class CreateJobsTable extends Migration
             $table->unsignedInteger('available_at')->comment('可用时间');
             $table->unsignedInteger('created_at')->comment('创建时间');
             $table->index(['queue', 'reserved_at']);
-	        $table->comment = '队列任务表';
         });
+        DB::statement("ALTER TABLE `jobs` comment '队列任务表'");
     }
 
     /**
