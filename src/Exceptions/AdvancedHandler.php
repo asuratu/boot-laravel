@@ -2,10 +2,12 @@
 
 namespace ZhuiTech\BootLaravel\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
@@ -132,6 +134,13 @@ class AdvancedHandler extends ExceptionHandler
         } else {
             return $this->error(REST_EXCEPTION, $e->getMessage());
         }
+    }
+
+    protected function unauthenticated($request, AuthenticationException $exception): JsonResponse|RedirectResponse
+    {
+        return $request->expectsJson()
+            ? response()->json($this->error(REST_NOT_LOGIN), 401)
+            : redirect()->guest(route('login'));
     }
 
 }
