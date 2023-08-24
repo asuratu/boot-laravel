@@ -13,7 +13,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -63,7 +62,7 @@ class AdvancedHandler extends ExceptionHandler
                 $e instanceof HttpResponseException => $e->getResponse(),
                 $e instanceof ValidationException => $this->invalidJson($request, $e),
                 $e instanceof AuthenticationException => $this->unauthenticated($request, $e),
-                $e instanceof HttpException => response()->json($this->handleHttpException($e), $e->getStatusCode(), ['Access-Control-Allow-Credentials' => 'true']),
+                $this->isHttpException($e) => response()->json($this->handleHttpException($e), $e->getStatusCode(), ['Access-Control-Allow-Credentials' => 'true']),
                 default => response()->json($result, 500, ['Access-Control-Allow-Credentials' => 'true']),
             };
         });
@@ -122,7 +121,7 @@ class AdvancedHandler extends ExceptionHandler
         if ($e instanceof AccessDeniedHttpException) {
             return $this->error(REST_NOT_AUTH);
         } elseif ($e instanceof NotFoundHttpException) {
-            return $this->error(REST_NOT_FOUND, $e->getMessage());
+            return $this->error(REST_NOT_FOUND);
         } elseif ($e instanceof RestCodeException) {
             return array_merge($this->error(), [
                 'status' => false,
