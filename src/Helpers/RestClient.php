@@ -188,7 +188,7 @@ class RestClient
      * @param       $url
      * @param array $queries
      * @param array $options
-     * @return array|mixed
+     * @return mixed
      */
     public function get($url, array $queries = [], array $options = []): mixed
     {
@@ -206,13 +206,20 @@ class RestClient
      * @param        $path
      * @param string $method
      * @param array  $options
-     * @return array|mixed
+     * @return mixed
      * @throws RestCodeException
      */
     public function request($path, string $method = 'GET', array $options = []): mixed
     {
         $url = $this->getUrl($path);
         $method = strtoupper($method);
+
+        if (array_key_exists('headers', $options) && !blank($options['headers'])) {
+            $options['headers'] = array_merge($this->defaults['headers'], $options['headers']);
+        } else {
+            $options['headers'] = $this->defaults['headers'];
+        }
+        
         $options = array_merge($this->defaults, $options);
 
         $headers = [];
@@ -368,7 +375,7 @@ class RestClient
      * @param array $data
      * @param array $queries
      * @param array $options
-     * @return array|mixed
+     * @return mixed
      */
     public function post($url, array $data = [], array $queries = [], array $options = []): mixed
     {
@@ -388,7 +395,7 @@ class RestClient
      * @param array $data
      * @param array $queries
      * @param array $options
-     * @return array|mixed
+     * @return mixed
      */
     public function put($url, array $data = [], array $queries = [], array $options = []): mixed
     {
@@ -406,7 +413,7 @@ class RestClient
      * @param array $data
      * @param array $queries
      * @param array $options
-     * @return array|mixed
+     * @return mixed
      */
     public function delete($url, array $data = [], array $queries = [], array $options = []): mixed
     {
