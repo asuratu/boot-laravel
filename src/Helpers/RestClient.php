@@ -6,6 +6,9 @@ use Exception;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\MessageFormatter;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +26,7 @@ class RestClient
 {
     /**
      * 全局参数
+     *
      * @var array
      */
     public static array $globals = [
@@ -31,10 +35,14 @@ class RestClient
         ],
     ];
 
-    protected HttpClient $client;
+    /**
+     * Http client.
+     */
+    protected HttpClient|null $client = null;
 
     /**
      * 默认请求参数
+     *
      * @var array
      */
     protected array $defaults = [
@@ -46,30 +54,35 @@ class RestClient
 
     /**
      * 默认的服务器
+     *
      * @var string|null
      */
-    protected ?string $server = NULL;
+    protected string|null $server = null;
 
     /**
      * 模拟用户
+     *
      * @var UserContract|null
      */
-    protected ?UserContract $user = NULL;
+    protected UserContract|null $user = null;
 
     /**
      * 日志名
+     *
      * @var string|null
      */
-    protected ?string $logName = NULL;
+    protected string|null $logName = null;
 
     /**
      * 日志对象
-     * @var Logger|null
+     *
+     * @var null
      */
-    protected ?Logger $logger = NULL;
+    protected $logger = null;
 
     /**
      * 返回原始内容
+     *
      * @var bool
      */
     protected bool $plain = false;
@@ -77,10 +90,11 @@ class RestClient
     /**
      * @var Response|null
      */
-    protected ?Response $response = null;
+    protected Response|null $response = null;
 
     /**
      * 代理模式
+     *
      * @var bool
      */
     protected bool $proxy = true;
@@ -89,10 +103,11 @@ class RestClient
 
     /**
      * 返回一个新实例
+     *
      * @param $server
      * @return $this
      */
-    public static function server($server = NULL): static
+    public static function server($server = null): static
     {
         $instance = new static();
 
@@ -106,7 +121,14 @@ class RestClient
         return $instance;
     }
 
-    public function client($client): static
+    /**
+     * Set GuzzleHttp\Client.
+     *
+     * @param HttpClient $client
+     *
+     * @return $this
+     */
+    public function client(HttpClient $client): static
     {
         $this->client = $client;
         return $this;
@@ -150,6 +172,7 @@ class RestClient
 
     /**
      * 代理模式
+     *
      * @param bool $proxy
      * @return $this
      */
@@ -178,12 +201,13 @@ class RestClient
     /**
      * Make a request.
      *
-     * @param string $path
+     * @param        $path
      * @param string $method
      * @param array  $options
      * @return array|mixed
+     * @throws RestCodeException
      */
-    public function request(string $path, string $method = 'GET', array $options = []): mixed
+    public function request($path, string $method = 'GET', array $options = []): mixed
     {
         $url = $this->getUrl($path);
         $method = strtoupper($method);
@@ -212,7 +236,7 @@ class RestClient
         $options['headers'] = $headers + $options['headers'];
 
         try {
-            $this->response = $this-> ()->request($method, $url, $options);
+            $this->response = $this->getClient()->request($method, $url, $options);
             $content = (string)$this->response->getBody();
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
@@ -221,7 +245,9 @@ class RestClient
             } else {
                 throw new RestCodeException(REST_REMOTE_FAIL, $e->getMessage());
             }
-        } catch (GuzzleException|Exception $e) {
+        } catch (GuzzleException $e) {
+            throw new RestCodeException(REST_REMOTE_FAIL, $e->getMessage());
+        } catch (Exception $e) {
             throw new RestCodeException(REST_REMOTE_FAIL, $e->getMessage());
         }
 
@@ -248,10 +274,11 @@ class RestClient
 
     /**
      * 获取正确请求地址
-     * @param string $path
-     * @return string
+     *
+     * @param $path
+     * @return mixed
      */
-    public function getUrl(string $path): string
+    public function getUrl($path): mixed
     {
         if (str_contains($path, '://') || empty($this->server)) {
             return $path;
@@ -266,13 +293,31 @@ class RestClient
         return rtrim($prefix, '/') . '/' . ltrim($path, '/');
     }
 
+    /**
+     * Return GuzzleHttp\Client instance.
+     *
+     * @return HttpClient
+     */
     protected function getClient(): HttpClient
     {
+        if (!($this->client instanceof HttpClient)) {
+            // 创建处理器
+            $handlerStack = HandlerStack::create();
+            if (!empty($this->getLogger())) {
+                $handlerStack->push(
+                    Middleware::log($this->getLogger(), new MessageFormatter('{method} {uri} HTTP/{version} {req_body} RESPONSE: {code} - {res_body}'))
+                );
+            }
+
+            $this->client = new HttpClient(['handler' => $handlerStack]);
+        }
+
         return $this->client;
     }
 
     /**
      * 获取日志对象
+     *
      * @return Logger|null
      */
     protected function getLogger(): ?Logger
@@ -294,6 +339,7 @@ class RestClient
 
     /**
      * 记录到日志
+     *
      * @param string $name
      * @return $this
      */
@@ -305,6 +351,7 @@ class RestClient
 
     /**
      * 返回原始响应对象
+     *
      * @return Response|null
      */
     public function getResponse(): ?Response
@@ -314,6 +361,7 @@ class RestClient
 
     /**
      * POST request.
+     *
      * @param       $url
      * @param array $data
      * @param array $queries
@@ -331,6 +379,7 @@ class RestClient
 
     /**
      * PUT request.
+     *
      * @param       $url
      * @param array $data
      * @param array $queries
@@ -346,6 +395,7 @@ class RestClient
 
     /**
      * DELETE request.
+     *
      * @param       $url
      * @param array $data
      * @param array $queries
@@ -361,11 +411,12 @@ class RestClient
 
     /**
      * Upload file.
+     *
      * @param       $url
      * @param array $files
      * @param array $form
      * @param array $queries
-     * @return array|mixed
+     * @return mixed
      */
     public function upload($url, array $files = [], array $form = [], array $queries = []): mixed
     {
@@ -374,10 +425,11 @@ class RestClient
 
     /**
      * POST form
+     *
      * @param       $url
      * @param array $form
      * @param array $queries
-     * @return array|mixed
+     * @return mixed
      */
     public function postForm($url, array $form = [], array $queries = []): mixed
     {
@@ -394,7 +446,7 @@ class RestClient
         ]);
     }
 
-    public function createMultipart(array $parameters, $prefix = ''): array
+    public function createMultipart(array $parameters, $prefix = '')
     {
         $return = [];
         foreach ($parameters as $name => $value) {
@@ -409,10 +461,10 @@ class RestClient
                 $item['headers'] = [
                     'content-type' => $value->getMimeType(),
                 ];
-            } else if (is_string($value) && is_file($value)) {
+            } elseif (is_string($value) && is_file($value)) {
                 // 本地文件
                 $item['contents'] = fopen($value, 'r');
-            } else if (is_array($value)) {
+            } elseif (is_array($value)) {
                 // 数组
                 $return = array_merge($return, $this->createMultipart($value, $item['name']));
                 continue;

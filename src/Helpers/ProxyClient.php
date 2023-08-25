@@ -2,23 +2,23 @@
 
 namespace ZhuiTech\BootLaravel\Helpers;
 
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Str;
 
 /**
  * 反向代理
  * Class HttpProxy
+ *
  * @package ZhuiTech\BootLaravel\Helpers
  */
 class ProxyClient extends RestClient
 {
     /**
      * 返回原始请求
+     *
      * @param null $url
      * @param null $method
      * @return Response
-     * @throws GuzzleException
      */
     public function pass($url = null, $method = null): Response
     {
@@ -63,10 +63,10 @@ class ProxyClient extends RestClient
 
     /**
      * 返回JSON
+     *
      * @param null $url
      * @param null $method
      * @return array|mixed
-     * @throws GuzzleException
      */
     public function passJson($url = null, $method = null): mixed
     {
