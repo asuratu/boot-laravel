@@ -194,7 +194,7 @@ class RestClient
     {
         return $this->request($url, 'GET', [
             'query' => $queries,
-            'headers' => $options
+            'headers' => array_merge($this->getHeaders(), $options)
         ]);
     }
 
@@ -219,7 +219,7 @@ class RestClient
         } else {
             $options['headers'] = $this->defaults['headers'];
         }
-        
+
         $options = array_merge($this->defaults, $options);
 
         $headers = [];
@@ -368,6 +368,15 @@ class RestClient
         return $this->response;
     }
 
+    protected function getHeaders(): array
+    {
+        return [
+
+        ];
+    }
+
+    /*Helper***********************************************************************************************************/
+
     /**
      * POST request.
      *
@@ -382,11 +391,9 @@ class RestClient
         return $this->request($url, 'POST', [
             'query' => $queries,
             'body' => json_encode($data, JSON_UNESCAPED_UNICODE),
-            'headers' => $options
+            'headers' => array_merge($this->getHeaders(), $options)
         ]);
     }
-
-    /*Helper***********************************************************************************************************/
 
     /**
      * PUT request.
@@ -402,7 +409,7 @@ class RestClient
         return $this->request($url, 'PUT', [
             'query' => $queries,
             'body' => json_encode($data, JSON_UNESCAPED_UNICODE),
-            'headers' => $options
+            'headers' => array_merge($this->getHeaders(), $options)
         ]);
     }
 
@@ -420,7 +427,7 @@ class RestClient
         return $this->request($url, 'DELETE', [
             'query' => $queries,
             'body' => json_encode($data, JSON_UNESCAPED_UNICODE),
-            'headers' => $options
+            'headers' => array_merge($this->getHeaders(), $options)
         ]);
     }
 
