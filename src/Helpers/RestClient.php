@@ -500,4 +500,22 @@ class RestClient
 
         return $return;
     }
+
+    /**
+     * POST request.
+     *
+     * @param       $url
+     * @param array $data
+     * @param array $queries
+     * @param array $options
+     * @return mixed
+     */
+    public function postByForm($url, array $data = [], array $queries = [], array $options = []): mixed
+    {
+        return $this->request($url, 'POST', [
+            'query' => $queries,
+            'form_params' => $data,
+            'headers' => array_merge($this->getHeaders(), $options),
+        ]);
+    }
 }
