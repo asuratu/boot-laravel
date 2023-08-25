@@ -47,6 +47,7 @@ class AdvancedHandler extends ExceptionHandler
             $result = $this->error();
             if (config('app.debug')) {
                 $result['exception'] = [
+                    'msg' => $e->getMessage(),
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                     'trace' => array_values(array_filter(explode("\n", $e->getTraceAsString()), function ($line) {
@@ -70,6 +71,7 @@ class AdvancedHandler extends ExceptionHandler
 
     /**
      * 返回错误消息
+     *
      * @param int  $code
      * @param null $message
      * @return array
