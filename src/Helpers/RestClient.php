@@ -187,12 +187,14 @@ class RestClient
      *
      * @param       $url
      * @param array $queries
+     * @param array $options
      * @return array|mixed
      */
-    public function get($url, array $queries = []): mixed
+    public function get($url, array $queries = [], array $options = []): mixed
     {
         return $this->request($url, 'GET', [
-            'query' => $queries
+            'query' => $queries,
+            'headers' => $options
         ]);
     }
 
@@ -365,13 +367,15 @@ class RestClient
      * @param       $url
      * @param array $data
      * @param array $queries
+     * @param array $options
      * @return array|mixed
      */
-    public function post($url, array $data = [], array $queries = []): mixed
+    public function post($url, array $data = [], array $queries = [], array $options = []): mixed
     {
         return $this->request($url, 'POST', [
             'query' => $queries,
-            'body' => json_encode($data, JSON_UNESCAPED_UNICODE)
+            'body' => json_encode($data, JSON_UNESCAPED_UNICODE),
+            'headers' => $options
         ]);
     }
 
@@ -383,13 +387,15 @@ class RestClient
      * @param       $url
      * @param array $data
      * @param array $queries
+     * @param array $options
      * @return array|mixed
      */
-    public function put($url, array $data = [], array $queries = []): mixed
+    public function put($url, array $data = [], array $queries = [], array $options = []): mixed
     {
         return $this->request($url, 'PUT', [
             'query' => $queries,
-            'body' => json_encode($data, JSON_UNESCAPED_UNICODE)
+            'body' => json_encode($data, JSON_UNESCAPED_UNICODE),
+            'headers' => $options
         ]);
     }
 
@@ -399,13 +405,15 @@ class RestClient
      * @param       $url
      * @param array $data
      * @param array $queries
+     * @param array $options
      * @return array|mixed
      */
-    public function delete($url, array $data = [], array $queries = []): mixed
+    public function delete($url, array $data = [], array $queries = [], array $options = []): mixed
     {
         return $this->request($url, 'DELETE', [
             'query' => $queries,
-            'body' => json_encode($data, JSON_UNESCAPED_UNICODE)
+            'body' => json_encode($data, JSON_UNESCAPED_UNICODE),
+            'headers' => $options
         ]);
     }
 
