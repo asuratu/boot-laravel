@@ -16,6 +16,7 @@ use ZhuiTech\BootLaravel\Helpers\Restful;
 /**
  *
  * Trait RestResponseTrait
+ *
  * @package ZhuiTech\BootLaravel\Controllers
  */
 trait RestResponse
@@ -46,6 +47,7 @@ trait RestResponse
 
     /**
      * 返回错误代码
+     *
      * @param                        $code
      * @param mixed                  $data
      * @param null                   $message
@@ -53,6 +55,8 @@ trait RestResponse
      */
     protected function error($code, mixed $data = [], $message = null): JsonResponse
     {
+        empty($message) && $message = null;
+
         $result = Restful::format($data, false, $code, $message);
 
         throw new HttpResponseException(response()->json($result));
@@ -60,6 +64,7 @@ trait RestResponse
 
     /**
      * 返回成功消息
+     *
      * @param mixed $data
      * @return JsonResponse
      */
@@ -70,6 +75,7 @@ trait RestResponse
 
     /**
      * API 返回数据
+     *
      * @param mixed $data
      * @param bool  $status
      * @param int   $code
@@ -84,6 +90,7 @@ trait RestResponse
 
     /**
      * 返回错误消息
+     *
      * @param       $message
      * @param array $data
      * @return JsonResponse
@@ -95,6 +102,7 @@ trait RestResponse
 
     /**
      * 转换列表数据
+     *
      * @param                          $list
      * @param TransformerAbstract|null $transformer
      * @return Collection
@@ -117,6 +125,7 @@ trait RestResponse
 
     /**
      * 转换数据
+     *
      * @param                          $item
      * @param TransformerAbstract|null $transformer
      * @return Item|null
